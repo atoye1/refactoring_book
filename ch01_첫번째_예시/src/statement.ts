@@ -1,13 +1,20 @@
+type Performance = {
+  playID: string;
+  audience: number;
+};
+
 type Invoice = {
   customer: string;
-  performances: any[];
+  performances: Performance[];
+};
+
+type Play = {
+  name: string;
+  type: string;
 };
 
 type Plays = {
-  [key: string]: {
-    name: string;
-    type: string;
-  };
+  [key: string]: Play;
 };
 
 export function statement(invoices: Invoice, plays: Plays) {
@@ -23,18 +30,26 @@ export function statement(invoices: Invoice, plays: Plays) {
 
   for (let perf of invoices.performances) {
     const play = plays[perf.playID];
+    let thisAmount = amountFor(perf, play);
+
+    result += `총액: ${format(totalAmount / 100)}\n`;
+    result += `적립 포인트: ${volumeCredits}점\n`;
+    return result;
+  }
+
+  function amountFor(perf: Performance, play: Play) {
     let thisAmount = 0;
 
     switch (play.type) {
       case 'tragedy':
         thisAmount = 40000;
-        if (perf.audienc > 30) {
+        if (perf.audience > 30) {
           thisAmount += 1000 * (perf.audience - 30);
         }
         break;
       case 'comedy':
         thisAmount = 30000;
-        if (perf.audienc > 20) {
+        if (perf.audience > 20) {
           thisAmount += 10000 + 500 * (perf.audience - 20);
         }
         thisAmount += 300 * perf.audience;
@@ -52,8 +67,4 @@ export function statement(invoices: Invoice, plays: Plays) {
 
     totalAmount += thisAmount;
   }
-
-  result += `총액: ${format(totalAmount / 100)}\n`;
-  result += `적립 포인트: ${volumeCredits}점\n`;
-  return result;
 }
