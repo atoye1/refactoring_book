@@ -19,28 +19,35 @@ type Plays = {
 
 export function statement(invoices: Invoice, plays: Plays): string {
   let totalAmount = 0;
-  let volumeCredits = 0;
   let result = `청구 내역 ( 고객명 : ${invoices.customer})\n`;
 
   for (let perf of invoices.performances) {
-    volumeCredits += volumeCreditsFor(perf);
     // 청구 내역을 출력한다.
-    result += ` ${playFor(perf).name} : ${format(amountFor(perf) / 100)} (${
+    result += ` ${playFor(perf).name} : ${usd(amountFor(perf) / 100)} (${
       perf.audience
     }석)\n`;
     totalAmount += amountFor(perf);
   }
 
-  result += `총액: ${format(totalAmount / 100)}\n`;
-  result += `적립 포인트: ${volumeCredits}점\n`;
+  result += `총액: ${usd(totalAmount / 100)}\n`;
+  result += `적립 포인트: ${totalVolumeCredits()}점\n`;
   return result;
 
-  function format(aNumber: number) {
+  function usd(aNumber: number) {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
     }).format(aNumber);
+  }
+
+  function totalVolumeCredits() {
+    let result = 0;
+    for (let perf of invoices.performances) {
+      result += volumeCreditsFor(perf);
+      // 청구 내역을 출력한다.
+    }
+    return result;
   }
 
   function volumeCreditsFor(aPerformance: Performance): number {
