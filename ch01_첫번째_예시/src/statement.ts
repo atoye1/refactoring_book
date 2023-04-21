@@ -93,6 +93,6 @@ export function renderPlainText(data: StatementData, plays: Plays): string {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-    }).format(aNumber);
+    }).format(aNumber / 100);
   }
 }
