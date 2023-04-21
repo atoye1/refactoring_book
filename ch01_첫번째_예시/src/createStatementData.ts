@@ -7,6 +7,15 @@ import {
   EnrichedPerformance,
 } from './types';
 
+class performanceCalculator {
+  performance: Performance;
+  play: Play;
+  constructor(aPerformance: Performance, aPlay: Play) {
+    this.performance = aPerformance;
+    this.play = aPlay;
+  }
+}
+
 export default function createStatementData(invoice: Invoice, plays: Plays) {
   const result = {} as StatementData;
   result.customer = invoice.customer;
@@ -16,14 +25,18 @@ export default function createStatementData(invoice: Invoice, plays: Plays) {
   return result;
 
   function enrichPerformance(aPerformance: Performance) {
+    const calculator = new performanceCalculator(
+      aPerformance,
+      playFor(aPerformance)
+    );
     const result = Object.assign({}, aPerformance) as EnrichedPerformance;
-    result.play = playFor(result);
+    result.play = calculator.play;
     result.amount = amountFor(result);
     result.volumsCredits = volumeCreditsFor(result);
     return result;
   }
 
-  function playFor(aPerformance: EnrichedPerformance): Play {
+  function playFor(aPerformance: Performance): Play {
     return plays[aPerformance.playID];
   }
 
