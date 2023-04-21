@@ -1,66 +1,36 @@
-import { Invoice, Play, Performance, Plays, StatementData } from './types';
+import {
+  Invoice,
+  Play,
+  Performance,
+  Plays,
+  StatementData,
+  EnrichedPerformance,
+} from './types';
 
 export function statement(invoice: Invoice, plays: Plays) {
   const statementData = {} as StatementData;
   statementData.customer = invoice.customer;
-  statementData.performances = invoice.performances;
+  statementData.performances = invoice.performances.map(enrichPerformance);
+  statementData.totalAmount = totalAmount(statementData);
+  statementData.totalVolumeCredits = totalVolumeCredits(statementData);
   return renderPlainText(statementData, plays);
-}
 
-function renderPlainText(data: StatementData, plays: Plays): string {
-  let result = `청구 내역 ( 고객명 : ${data.customer})\n`;
-
-  for (let perf of data.performances) {
-    // 청구 내역을 출력한다.
-    result += ` ${playFor(perf).name} : ${usd(amountFor(perf) / 100)} (${
-      perf.audience
-    }석)\n`;
-  }
-  result += `총액: ${usd(totalAmount() / 100)}\n`;
-  result += `적립 포인트: ${totalVolumeCredits()}점\n`;
-  return result;
-
-  function totalAmount() {
-    let result = 0;
-    for (let perf of data.performances) {
-      result += amountFor(perf);
-    }
+  function enrichPerformance(aPerformance: Performance) {
+    const result = Object.assign({}, aPerformance) as EnrichedPerformance;
+    result.play = playFor(result);
+    result.amount = amountFor(result);
+    result.volumsCredits = volumeCreditsFor(result);
     return result;
   }
 
-  function usd(aNumber: number) {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(aNumber);
-  }
-
-  function totalVolumeCredits() {
-    let result = 0;
-    for (let perf of data.performances) {
-      result += volumeCreditsFor(perf);
-      // 청구 내역을 출력한다.
-    }
-    return result;
-  }
-
-  function volumeCreditsFor(aPerformance: Performance): number {
-    let result = 0;
-    result += Math.max(aPerformance.audience - 30, 0);
-    if ('comedy' == playFor(aPerformance).type)
-      result += Math.floor(aPerformance.audience / 5);
-    return result;
-  }
-
-  function playFor(aPerformance: Performance): Play {
+  function playFor(aPerformance: EnrichedPerformance): Play {
     return plays[aPerformance.playID];
   }
 
-  function amountFor(aPerformance: Performance): number {
+  function amountFor(aPerformance: EnrichedPerformance): number {
     let result = 0;
 
-    switch (playFor(aPerformance).type) {
+    switch (aPerformance.play.type) {
       case 'tragedy':
         result = 40000;
         if (aPerformance.audience > 30) {
@@ -75,8 +45,54 @@ function renderPlainText(data: StatementData, plays: Plays): string {
         result += 300 * aPerformance.audience;
         break;
       default:
-        throw new Error(`알 수 없는 장르: ${playFor(aPerformance).type}`);
+        throw new Error(`알 수 없는 장르: ${aPerformance.play.type}`);
     }
     return result;
+  }
+
+  function volumeCreditsFor(aPerformance: EnrichedPerformance): number {
+    let result = 0;
+    result += Math.max(aPerformance.audience - 30, 0);
+    if ('comedy' == aPerformance.play.type)
+      result += Math.floor(aPerformance.audience / 5);
+    return result;
+  }
+
+  function totalAmount(data: StatementData) {
+    let result = 0;
+    for (let perf of data.performances) {
+      result += amountFor(perf);
+    }
+    return result;
+  }
+
+  function totalVolumeCredits(data: StatementData) {
+    let result = 0;
+    for (let perf of data.performances) {
+      result += volumeCreditsFor(perf);
+      // 청구 내역을 출력한다.
+    }
+    return result;
+  }
+}
+
+export function renderPlainText(data: StatementData, plays: Plays): string {
+  let result = `청구 내역 ( 고객명 : ${data.customer})\n`;
+
+  for (let perf of data.performances) {
+    // 청구 내역을 출력한다.
+    result += ` ${perf.play.name} : ${usd(perf.amount)} (${perf.audience}석)\n`;
+  }
+  console.log(data);
+  result += `총액: ${usd(data.totalAmount)}\n`;
+  result += `적립 포인트: ${data.totalVolumeCredits}점\n`;
+  return result;
+
+  function usd(aNumber: number) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(aNumber);
   }
 }

@@ -5,6 +5,7 @@ import { statement } from './statement';
 describe('statement test', () => {
   it('should print correct string', () => {
     const result = statement(invoices[0], plays);
+
     const correct_result = `청구 내역 ( 고객명 : BigCo)
  hamlet : $650.00 (55석)
  As You Like It : $580.00 (35석)

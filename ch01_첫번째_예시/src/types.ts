@@ -17,6 +17,15 @@ export type Plays = {
   [key: string]: Play;
 };
 
+export type EnrichedPerformance = {
+  play: Play;
+  amount: number;
+  volumsCredits: number;
+} & Performance;
+
 export type StatementData = {
-  performances: Performance[];
+  performances: EnrichedPerformance[];
+  totalAmount: number;
+  totalVolumeCredits: number;
+  play: Play;
 } & Pick<Invoice, 'customer'>;
