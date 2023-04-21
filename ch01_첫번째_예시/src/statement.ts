@@ -1,26 +1,16 @@
-type Performance = {
-  playID: string;
-  audience: number;
-};
+import { Invoice, Play, Performance, Plays, StatementData } from './types';
 
-type Invoice = {
-  customer: string;
-  performances: Performance[];
-};
+export function statement(invoice: Invoice, plays: Plays) {
+  const statementData = {} as StatementData;
+  statementData.customer = invoice.customer;
+  statementData.performances = invoice.performances;
+  return renderPlainText(statementData, plays);
+}
 
-type Play = {
-  name: string;
-  type: string;
-};
+function renderPlainText(data: StatementData, plays: Plays): string {
+  let result = `청구 내역 ( 고객명 : ${data.customer})\n`;
 
-type Plays = {
-  [key: string]: Play;
-};
-
-export function statement(invoices: Invoice, plays: Plays): string {
-  let result = `청구 내역 ( 고객명 : ${invoices.customer})\n`;
-
-  for (let perf of invoices.performances) {
+  for (let perf of data.performances) {
     // 청구 내역을 출력한다.
     result += ` ${playFor(perf).name} : ${usd(amountFor(perf) / 100)} (${
       perf.audience
@@ -32,7 +22,7 @@ export function statement(invoices: Invoice, plays: Plays): string {
 
   function totalAmount() {
     let result = 0;
-    for (let perf of invoices.performances) {
+    for (let perf of data.performances) {
       result += amountFor(perf);
     }
     return result;
@@ -48,7 +38,7 @@ export function statement(invoices: Invoice, plays: Plays): string {
 
   function totalVolumeCredits() {
     let result = 0;
-    for (let perf of invoices.performances) {
+    for (let perf of data.performances) {
       result += volumeCreditsFor(perf);
       // 청구 내역을 출력한다.
     }
