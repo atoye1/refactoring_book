@@ -1,5 +1,5 @@
-import invoices from './invoices.json';
-import plays from './plays.json';
+import invoices from './data/invoices.json';
+import plays from './data/plays.json';
 import { htmlStatement, statement } from './statement';
 
 describe('statements test', () => {

@@ -1,7 +1,7 @@
 import { statement, htmlStatement } from './statement';
 import { writeFileSync } from 'fs';
-import invoices from './invoices.json';
-import plays from './plays.json';
+import invoices from './data/invoices.json';
+import plays from './data/plays.json';
 
 const result = statement(invoices[0], plays);
 console.log(result);
